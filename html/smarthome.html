@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <title>스마트 홈 모니터링</title>
+    <meta name="viewport"
+        content="initial-scale=1, maximum-scale=1, user-scalable=no">
+    <link rel="shortcut icon" href="favicon_16.ico" />
+    <link rel="bookmark" href="favicon_16.ico" />
+    <!-- site css -->
+    <link rel="stylesheet" href="static/lib/css/font.css">
+    <link rel="stylesheet" href="static/dist/css/site.min.css">
+    <link rel="stylesheet" href="static/mdi/css/materialdesignicons.min.css">  
+    <link rel="stylesheet" href="static/lib/css/jquery-ui.min.css">
+    <link rel="stylesheet" href="static/lib/css/dataTables.bootstrap.min.css">
+    <link rel="stylesheet" href="static/lib/css/toastr.css?var={{rand}}">
+    <link rel="stylesheet" href="static/lib/css/piano.css?var={{rand}}">
+
+    <script type="text/javascript" src="static/dist/js/site.min.js"></script>
+    <script src="static/lib/js/jquery-ui.min.js"></script>
+    <script src="static/lib/js/toastr.min.js"></script>
+    <script src="static/lib/js/konva.js"></script>
+    {% include 'common/css.html' %}
+    <!-- bootstrap-switch 추가 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/css/bootstrap3/bootstrap-switch.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-switch/3.3.4/js/bootstrap-switch.min.js"></script>
+    <!-- bootstrap-switch 추가 -->
+</head>
+<body>
+    <!-- https://www.w3schools.com/bootstrap/default.asp -->    
+    <!--header + top-->
+    {% include 'top.html' %}
+    <!--header + top end-->
+    <!-- 3단중 중단(사이드 메뉴와 본문)  -->
+    <div class="container-fluid">
+        <!--documents-->
+        <div class="row row-offcanvas row-offcanvas-left">
+            {% include 'menu.html' %}
+            <div class="col-xs-12 col-sm-9 content">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            <a href="javascript:void(0);" class="toggle-sidebar">
+                                <span class="fa fa-angle-double-left" data-toggle="offcanvas" title="Maximize Panel"></span>
+                            </a>
+                            Home Care
+                        </h3>
+                    </div>
+                    <div class="panel-body">
+                        <!-- Tab Menu -->
+                        <div class="col-md-6">
+                            <ul id="myTab" class="nav nav-pills nav-justified">
+                                <li class="active"><a href="#Smarthome" data-toggle="tab">스마트 홈 프로젝트</a></li>
+                            </ul>
+                        </div>
+                        <!-- Tab Menu End-->
+                        <div id="myTabContent" class="tab-content col-md-12">
+                            <div class="tab-pane fade active in" id="Switch">
+                                <div class="tab-content col-md-12" style="border-top: 1px solid #80808069; padding-top: 10px;">
+                                    <div class="content-row">
+                                        <!--센서 데이터 모니터링-->
+                                        <!--조도 센서-->
+                                        <div class="row mt-3">
+                                            <div class="col-md-6">
+                                                <h4>조도 정보</h4>
+                                                <p id="lightStatus" class="mb-3">조도 확인 중..</p>
+                                                <div class="form-group">
+                                                    <label class="control-label ml-4 padding">조명 스위치</label>
+                                                    <input type="checkbox" class="led-switch" data-on-text="ON" data-off-text="OFF">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!--조도 센서-->
+                                        <!--초음파 센서-->
+                                        <div class="row mt-4">
+                                           
+                                            <div class="col-md-12">
+                                                <h4>실내 움직임 감지</h4>
+                                                <canvas id="ultrasonicChart" width="400" height="200"></canvas>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p id="movementStatus" class="mb-3">움직임 확인 중..</p>
+                                                <label class="control-label ml-4 padding">경고음 스위치</label>
+                                                <input type="checkbox" class="buzzer-switch" data-on-text="ON" data-off-text="OFF">
+                                            </div>
+                                        </div>
+                                        <!--초음파 센서-->
+                                        <!--온습도 센서-->
+                                        <div class="row mt-4">
+                                            <div class="col-md-12">
+                                                <h4>온도 및 습도</h4>
+                                                <canvas id="tempChart"></canvas>
+                                            </div>
+                                        </div>
+                                        <!--온습도 센서-->
+                                        <!--센서 데이터 모니터링-->
+                                        <!-- row -->
+                                    </div>
+                                    <!-- content-row -->
+                                </div>
+                                <!--tab-content-->
+                            </div>
+                            <!-- Event end-->
+                        </div>
+                        <!-- myTabContent end -->
+                    </div>
+                    <!-- panel body end-->
+                </div>
+                <!-- panel panel-default end -->
+            </div>
+            <!-- content -->
+        </div>
+    </div>
+    <!-- 3단중 중단(사이드 메뉴와 본문) end -->
+    <!--footer(하단)-->
+    <div class="site-footer">
+        <div class="container">
+            <div class="copyright clearfix">
+                <p>
+                    <b>IOT AMDIN SYSTEM</b>&nbsp;&nbsp;&nbsp;&nbsp;
+                </p>
+                <p>Copyright © ine.gachon.ac.kr 2023</p>
+            </div>
+        </div>
+    </div>
+    <!--footer(하단) end-->
+   
+    <div class="loading-overlay">
+        <img src="static/image/Spinner-1s-200px.gif" alt="Loading" class="loading-image">
+    </div>
+</body>
+{% include 'common/js_fun.html' %}
+{% include 'common/js_init.html' %}
+<script src="static/lib/js/socket.io-3.0.1.min.js"></script>
+<script>
+    $(function() {
+        //소켓아이오 js
+        ////////////////////////////////////////////////////////////////////////////
+        socket = io({
+            transports : [ 'websocket' ]
+        });
+       
+        socket.on('connect', function() {
+            console.log('소켓 접속 완료');
+            //alertShow('socket connection complete');
+        });
+        socket.on('disconnect', function() {
+            console.log('소켓 접속 종료');
+        });
+
+        socket.on('ret_light_sensor', function(data) {
+            const lightStatus = data.light === 'HIGH' ? '실내가 어둡습니다.' : '실내가 밝습니다.';
+            document.getElementById('lightStatus').innerText = `${lightStatus}`;
+        });
+
+         // LED 스위치 이벤트 처리
+        $('.led-switch').bootstrapSwitch({
+            onText: "ON",
+            offText: "OFF",
+            onSwitchChange: function(event, state) {
+                if(state) {
+                    socket.emit('set_led', {data: 'on'});
+                } else {
+                    socket.emit('set_led', {data: 'off'});
+                }
+            }
+          });
+        // 초음파 센서 데이터 처리
+        const ctx = document.getElementById('ultrasonicChart').getContext('2d');
+        const ultrasonicChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: '거리 (cm)',
+                    data: [],
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1,
+                    fill: false
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: false
+                    }
+                }
+            }
+        });
+        // 초음파 센서 데이터
+        socket.on('ret_ultrasonic_sensor', function(data) {
+            const distance = data.distance;
+            const now = new Date();
+            const timeLabel = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
+
+            if (ultrasonicChart.data.labels.length > 50) {
+                ultrasonicChart.data.labels.shift();
+                ultrasonicChart.data.datasets.forEach((datasets)=>{
+                    datasets.data.shift();
+                });
+            }
+
+            ultrasonicChart.data.labels.push(timeLabel);
+            ultrasonicChart.data.datasets[0].data.push(distance);
+            ultrasonicChart.update();
+
+            const movementStatus = distance < 100 ? '실내에서 움직임이 감지되었습니다 경고음을 울릴까요?.' : '움직임이 없습니다.';
+            document.getElementById('movementStatus').innerText = movementStatus;
+        });
+        
+
+        // 부저
+        $('.buzzer-switch').bootstrapSwitch({
+            onText: "ON",
+            offText: "OFF",
+            onSwitchChange: function(event, state) {
+                if(state) {
+                    socket.emit('set_buzzer', {data: 'on'});
+                } else {
+                    socket.emit('set_buzzer', {data: 'off'});
+                }
+            }
+        });
+
+        const ctx_temp = document.getElementById('tempChart').getContext('2d');
+        const tempChart = new Chart(ctx_temp, {
+        type: 'line',
+        data: {
+            labels: [],  // 빈 레이블 배열
+            datasets: [{
+                label: '온도 (°C)',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderColor: 'rgba(255, 99, 132, 1)',
+                data: []
+            }, {
+                label: '습도 (%)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                data: []
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: false
+                }
+            }
+        }
+        
+        
+        });
+        socket.emit('get_temperature', {});
+            socket.on('ret_temperature', function(data) {
+                const now = new Date();
+                const timeLabel = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
+
+                // Update Temperature and Humidity Data
+                if (tempChart.data.labels.length > 20) {
+                    tempChart.data.labels.shift();  // Remove the first label
+                    tempChart.data.datasets.forEach(dataset => {
+                        dataset.data.shift();  // Remove the first data point
+                    });
+                }
+                tempChart.data.labels.push(timeLabel);
+                tempChart.data.datasets[0].data.push(data.temperature);
+                tempChart.data.datasets[1].data.push(data.humidity);
+                tempChart.update();
+            });
+            setInterval(() => {
+    const now = new Date();
+    const timeLabel = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
+    const temperature = (Math.random() * 10) + 20;  // 20°C ~ 30°C 사이의 온도
+    const humidity = (Math.random() * 50) + 50;  // 50% ~ 100% 사이의 습도
+    if (tempChart.data.labels.length > 20) {
+        tempChart.data.labels.shift();  // 레이블 배열에서 첫 번째 요소 제거
+        tempChart.data.datasets.forEach((dataset) => {
+            dataset.data.shift();  // 데이터셋에서 첫 번째 데이터 제거
+        });
+    }
+    tempChart.data.labels.push(timeLabel);
+    tempChart.data.datasets[0].data.push(temperature);
+    tempChart.data.datasets[1].data.push(humidity);
+    tempChart.update();
+}, 1000);  // 1초마다 데이터 업데이트
+    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/raphael/raphael.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/justgage/justgage.js"></script>
+<script type="text/javascript" src="static/lib/js/jquery.dataTables.min.js"></script>
+<script type="text/javascript" src="static/lib/js/dataTables.bootstrap.min.js"></script>
+<script type="text/javascript" src="static/lib/js/piano.js"></script>
+<script src="static/user/js/system_info.js?var={{rand}}"></script>
+
+<script>
+alertShow('');
+setInterval(() => {
+        socket.emit('get_ultrasonic_sensor', {});
+    }, 1000);
+    setInterval(() => {
+        socket.emit('get_light_sensor', {});
+    }, 1000);
+</script>
+</html>
